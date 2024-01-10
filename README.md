@@ -1,11 +1,11 @@
-## Task 2
+## Task 3
 
-You have a list of n items. 
- 
-e.g = [1 , 1, 4, 4, 6, 32, 32, 32, 5, 522, 0, .....] , [24 , 3, 5, 5, 6, 11, 11, 32, , 5 , 5, 52, 32, 0, -4, .....]
+Get information about the users and their posts from the urls: https://jsonplaceholder.typicode.com/users, https://jsonplaceholder.typicode.com/posts 
 
- Create a class to manage: 
- finding the occurrence of each number in list, find the most common item(s)
+Process information and: 
+* display name and email of users
+* find number of posts of each user 
+* user(s) with most posts
 
  Related Readings: 
  * HTTP Requests: https://blog.bytebytego.com/p/devops-books , https://blog.bytebytego.com/p/devops-books
