@@ -1,11 +1,11 @@
-## Task 1 
+## Task 4
 
-You have a list of n items. 
- 
-e.g = [1 , 1, 4, 4, 6, 32, 32, 32, 5, 522, 0, .....] , [24 , 3, 5, 5, 6, 11, 11, 32, , 5 , 5, 52, 32, 0, -4, .....]
- 
-You need to find out the occurrence of each value from this list. 
+From the Pakistan Stock Exchange webiste (https://dps.psx.com.pk/), retrieve the following data: 
 
-Related Readings/Materials: 
-* PEP8: https://peps.python.org/pep-0008/ 
-* Prompt Engineering: https://youtu.be/mBYu5NoXBcs?si=mYE5zgwATnRSDQk0
+* the index from the previous month with the highest price, the value of the price, and the time at which it was the highest
+* from the Market Watch table: load data into Pandas, find the top 10 symbols which had the highest change for the current day
+
+Use:
+* BeautifulSoup for scrapping
+* Pandas for analysis and sorting
+* Sessions for pooling connections 
