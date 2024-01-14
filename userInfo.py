@@ -1,14 +1,20 @@
 import requests
 from collections import Counter
 
-def displayUserInfo(users): 
-    #users is a list of json objects, each json object represents a user
-    for user in users:
-        name = user["name"]
-        email = user["email"]
-        print("Name: ", name, " Email: ", email)
 
-def countUserPosts(userPosts):
+def getUserInfo(user_data, users_posts_count):
+    for user in user_data:
+        if(user['id'] in users_posts_count):
+            print("ID: ", user['id'], " Name: ", user['name'], " Email: ", user['email'], " Posts count: ", users_posts_count[user['id']])
+
+# def displayUserInfo(users): 
+#     #users is a list of json objects, each json object represents a user
+#     for user in users:
+#         name = user["name"]
+#         email = user["email"]
+#         print("Name: ", name, " Email: ", email)
+
+def countUserPosts(userPosts, user_data):
     #userPosts is a list of json objects, each json object holds info about a user's post
     
     #creating a list of userIDs from userPosts to pass to Counter class
@@ -16,7 +22,8 @@ def countUserPosts(userPosts):
 
     #Using Counter to count the number of posts for each user
     users_posts_count = Counter(user_ids)
-    print("Number of posts for each user: ", users_posts_count)
+    
+    getUserInfo(user_data, users_posts_count)
 
     return users_posts_count
 
@@ -36,11 +43,8 @@ user_data = userdata_response.json()
 userposts_response = requests.get("https://jsonplaceholder.typicode.com/posts")
 user_posts_data = userposts_response.json()
 
-#Displaying user information
-displayUserInfo(user_data)
-
 #Number of posts for each user
-usersPostsCounter = countUserPosts(user_posts_data)
+usersPostsCounter = countUserPosts(user_posts_data, user_data)
 
 #users with most posts: 
 usersWithMostPosts(usersPostsCounter, 5)
