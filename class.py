@@ -2,7 +2,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 import pandas as pd
-import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -109,14 +108,14 @@ class PSXAnalyzer:
 psx_scraper = PSXScraper()
 html_content = psx_scraper.getHTMLContent()
 psx_scraper.parseContent(html_content)
-psx_scraper.getChart()
+psx_scraper.getChart()  
 
 psx_analyzer = PSXAnalyzer(psx_scraper.table_data, psx_scraper.chart_data)
 
-# table_DF = psx_analyzer.preprocessingTable()
+table_DF = psx_analyzer.preprocessingTable()
 chart_DF = psx_analyzer.preprocessingChart()
 
-# psx_analyzer.topTenChange()
+psx_analyzer.topTenChange()
 psx_analyzer.maxValue()
 
 
