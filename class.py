@@ -17,7 +17,6 @@ class PSXScraper:
         self.path = "timeseries/eod/KSE100"
     
     def getHTMLContent(self):
-
         #Using selenium driver to load page and access dynamic content
         self.driver.get(self.domain) 
         dropdown_xpath = "/html[1]/body[1]/div[6]/div[9]/div[2]/div[3]/div[1]/div[1]/div[1]/div[1]/label[1]/select[1]"
@@ -67,8 +66,8 @@ class PSXScraper:
     def getChart(self):
         required_url = self.domain + self.path
         response = requests.get(required_url)
-        response = response.json()
-        self.chart_data = np.array(response['data'])
+        response = response.json() 
+        self.chart_data = response['data']
 
 
 class PSXAnalyzer:
@@ -80,7 +79,7 @@ class PSXAnalyzer:
     
     def preprocessingTable(self):
         column_names = self.table_data[0]
-        data = self.table_data[2:]
+        data = self.table_data[2:] 
         self.table_dataframe = pd.DataFrame(data, columns=column_names) #creating Pandas DataFrame object
 
         # Remove '%' sign from change column
@@ -94,7 +93,10 @@ class PSXAnalyzer:
         print("Top 10 symbols with most change today:\n", top_ten_change)
     
     def preprocessingChart(self):
-        self.chart_dataframe = pd.DataFrame(self.chart_data[:, :2], columns=['TIMESTAMP', 'INDEX VALUE'])
+        self.chart_data = [column[:2] for column in self.chart_data] #using timestamp and index value columns for df
+        columns = ['TIMESTAMP', 'INDEX VALUE']
+        self.chart_dataframe = pd.DataFrame(self.chart_data, columns=columns)
+        #converting from Unix timestamp to datetime objects
         self.chart_dataframe['TIMESTAMP'] = self.chart_dataframe['TIMESTAMP'].apply(lambda x:datetime.utcfromtimestamp(x))
         self.chart_dataframe = self.chart_dataframe.loc[self.chart_dataframe['TIMESTAMP']>='2023-12-15 00:00:00']
         return self.chart_dataframe
@@ -111,7 +113,7 @@ psx_scraper.getChart()
 
 psx_analyzer = PSXAnalyzer(psx_scraper.table_data, psx_scraper.chart_data)
 
-table_DF = psx_analyzer.preprocessingTable()
+# table_DF = psx_analyzer.preprocessingTable()
 chart_DF = psx_analyzer.preprocessingChart()
 
 # psx_analyzer.topTenChange()
