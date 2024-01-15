@@ -8,4 +8,10 @@ From the Pakistan Stock Exchange webiste (https://dps.psx.com.pk/), retrieve the
 Use:
 * BeautifulSoup for scrapping
 * Pandas for analysis and sorting
-* Sessions for pooling connections 
+* Sessions for pooling connections
+  
+Reading Material: 
+* https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+* https://www.youtube.com/watch?v=qmpUfWN7hh4
+* https://www.youtube.com/watch?v=a-sBfyiXysI
+  
