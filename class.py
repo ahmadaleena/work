@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 import pandas as pd
@@ -10,18 +9,17 @@ from datetime import datetime
 
 #PSX Scraper Class: get HTML content from webpage using requests and Selenium, parse using BeautifulSoup
 class PSXScraper:
-    domain = "https://dps.psx.com.pk/"
-    path = "timeseries/eod/KSE100"
-    
     def __init__(self):
         self.driver = webdriver.Chrome()
-        self.chart_data = None #chart data for Task 1
+        self.chart_data = [] #chart data for Task 1
         self.table_data = []
+        self.domain = "https://dps.psx.com.pk/"
+        self.path = "timeseries/eod/KSE100"
     
     def getHTMLContent(self):
 
         #Using selenium driver to load page and access dynamic content
-        self.driver.get(PSXScraper.domain) 
+        self.driver.get(self.domain) 
         dropdown_xpath = "/html[1]/body[1]/div[6]/div[9]/div[2]/div[3]/div[1]/div[1]/div[1]/div[1]/label[1]/select[1]"
         dropdown = self.driver.find_element(by=By.XPATH, value=dropdown_xpath)
         select = Select(dropdown)
@@ -67,7 +65,7 @@ class PSXScraper:
             row_list.append('NO')
     
     def getChart(self):
-        required_url = PSXScraper.domain + PSXScraper.path
+        required_url = self.domain + self.path
         response = requests.get(required_url)
         response = response.json()
         self.chart_data = np.array(response['data'])
@@ -98,6 +96,7 @@ class PSXAnalyzer:
     def preprocessingChart(self):
         self.chart_dataframe = pd.DataFrame(self.chart_data[:, :2], columns=['TIMESTAMP', 'INDEX VALUE'])
         self.chart_dataframe['TIMESTAMP'] = self.chart_dataframe['TIMESTAMP'].apply(lambda x:datetime.utcfromtimestamp(x))
+        self.chart_dataframe = self.chart_dataframe.loc[self.chart_dataframe['TIMESTAMP']>='2023-12-15 00:00:00']
         return self.chart_dataframe
     
     def maxValue(self):
@@ -115,7 +114,7 @@ psx_analyzer = PSXAnalyzer(psx_scraper.table_data, psx_scraper.chart_data)
 table_DF = psx_analyzer.preprocessingTable()
 chart_DF = psx_analyzer.preprocessingChart()
 
-psx_analyzer.topTenChange()
+# psx_analyzer.topTenChange()
 psx_analyzer.maxValue()
 
 
