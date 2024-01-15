@@ -9,28 +9,28 @@ from datetime import datetime
 #PSX Scraper Class: get HTML content from webpage using requests and Selenium, parse using BeautifulSoup
 class PSXScraper:
     def __init__(self):
-        self.driver = webdriver.Chrome()
+        # self.driver = webdriver.Chrome()
         self.chart_data = [] #chart data for Task 1
         self.table_data = []
         self.domain = "https://dps.psx.com.pk/"
-        self.path = "timeseries/eod/KSE100"
+        self.path_chart = "timeseries/eod/KSE100"
+        self.path_table = "market-watch"
+        self.table_html = ""
     
     def getHTMLContent(self):
-        #Using selenium driver to load page and access dynamic content
-        self.driver.get(self.domain) 
-        dropdown_xpath = "/html[1]/body[1]/div[6]/div[9]/div[2]/div[3]/div[1]/div[1]/div[1]/div[1]/label[1]/select[1]"
-        dropdown = self.driver.find_element(by=By.XPATH, value=dropdown_xpath)
-        select = Select(dropdown)
-        #apply filter to get all 361 table entries
-        select.select_by_visible_text("All") 
-        return self.driver.page_source 
+        s = requests.Session()
+        table_url = self.domain + self.path_table
+        response = s.get(table_url)
+        self.table_html = response.text 
+        
+        chart_url = self.domain +  self.path_chart
+        response = s.get(chart_url)
+        response = response.json()
+        self.chart_data = response['data']
     
-    def parseContent(self, html_content):
-        soup = BeautifulSoup(html_content, 'html5lib')
-        # Locate the table within the page
-        required_class = "tbl__wrapper tbl__wrapper--scrollable"
-        tableParentDiv = soup.find('div', class_=required_class)
-        table = tableParentDiv.find('table')
+    def parseContent(self):
+        soup = BeautifulSoup(self.table_html, 'html5lib')
+        table = soup.find('table')
         if table:
             self.processTable(table)
         else:
@@ -63,7 +63,7 @@ class PSXScraper:
             row_list.append('NO')
     
     def getChart(self):
-        required_url = self.domain + self.path
+        required_url = self.domain + self.path1
         response = requests.get(required_url)
         response = response.json() 
         self.chart_data = response['data']
@@ -75,6 +75,10 @@ class PSXAnalyzer:
         self.chart_data = Chart_Data
         self.table_dataframe = None
         self.chart_dataframe = None
+        self.change_percent = "CHANGE (%)"
+        self.symbol = "SYMBOL"
+        self.time = "TIMESTAMP"
+        self.idx_val = "INDEX VALUE"
     
     def preprocessingTable(self):
         column_names = self.table_data[0]
@@ -82,33 +86,40 @@ class PSXAnalyzer:
         self.table_dataframe = pd.DataFrame(data, columns=column_names) #creating Pandas DataFrame object
 
         # Remove '%' sign from change column
-        self.table_dataframe["CHANGE (%)"] = self.table_dataframe["CHANGE (%)"].str.rstrip('%').astype('float')
+        self.table_dataframe[self.change_percent] = self.table_dataframe[self.change_percent].str.rstrip('%').astype('float')
         return self.table_dataframe
     
     def topTenChange(self):
-        top_ten_indices = self.table_dataframe['CHANGE (%)'].nlargest(10).index
-        top_ten_change = self.table_dataframe.loc[top_ten_indices, ['SYMBOL', 'CHANGE (%)']]
+        top_ten_indices = self.table_dataframe[self.change_percent].nlargest(10).index
+        if top_ten_indices.empty:
+            raise NotImplementedError
+        else:
+            top_ten_change = self.table_dataframe.loc[top_ten_indices, [self.symbol, self.change_percent]]
+
 
         print("Top 10 symbols with most change today:\n", top_ten_change)
     
     def preprocessingChart(self):
         self.chart_data = [column[:2] for column in self.chart_data] #using timestamp and index value columns for df
-        columns = ['TIMESTAMP', 'INDEX VALUE']
+        columns = [self.time, self.idx_val]
         self.chart_dataframe = pd.DataFrame(self.chart_data, columns=columns)
         #converting from Unix timestamp to datetime objects
-        self.chart_dataframe['TIMESTAMP'] = self.chart_dataframe['TIMESTAMP'].apply(lambda x:datetime.utcfromtimestamp(x))
-        self.chart_dataframe = self.chart_dataframe.loc[self.chart_dataframe['TIMESTAMP']>='2023-12-15 00:00:00']
+        self.chart_dataframe[self.time] = self.chart_dataframe[self.time].apply(lambda x:datetime.utcfromtimestamp(x))
+        self.chart_dataframe = self.chart_dataframe.loc[self.chart_dataframe[self.time]>='2023-12-15 00:00:00']
         return self.chart_dataframe
     
     def maxValue(self):
-        max_value_index = self.chart_dataframe['INDEX VALUE'].idxmax()
-        print("Highest index for last month:\n", self.chart_dataframe.loc[max_value_index, ['TIMESTAMP','INDEX VALUE']])
+        max_value_index = self.chart_dataframe[self.idx_val].idxmax()
+        if max_value_index is None:
+            raise NotImplementedError
+        else:
+            print("Highest index for last month:\n", self.chart_dataframe.loc[max_value_index, [self.time,self.idx_val]])
 
 
 psx_scraper = PSXScraper()
-html_content = psx_scraper.getHTMLContent()
-psx_scraper.parseContent(html_content)
-psx_scraper.getChart()  
+psx_scraper.getHTMLContent()
+psx_scraper.parseContent()
+# psx_scraper.getChart()  
 
 psx_analyzer = PSXAnalyzer(psx_scraper.table_data, psx_scraper.chart_data)
 
