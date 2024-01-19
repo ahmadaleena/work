@@ -27,12 +27,8 @@ def shortURLExists(session, new_short_url):
 def originalURLExists(new_original_url):
     session = create_session()
     result = session.query(URLShortener).filter_by(original_url=new_original_url).first()
-    if result:
-        session.close()
-        return result
-    else:
-        session.close()
-        return False
+    session.close()
+    return result if result else False
 
 def incrementHit(session, new_original_url):
     result = session.query(URLShortener).filter_by(original_url=new_original_url).first()
@@ -50,12 +46,8 @@ def addNewURL(session, new_short_url, new_original_url):
 def handle_short_url(short_url):
     session = create_session()
     result = session.query(URLShortener).filter_by(short_url=short_url).first()
-    if result: 
-        session.close()
-        return result.original_url
-    else:
-        session.close()
-        return None #need to give 404 response 
+    session.close()
+    return result and result.original_url or None
 
 def handleNewURL(new_url):
     #check if already exists in db
