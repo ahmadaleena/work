@@ -1,13 +1,12 @@
 from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.responses import RedirectResponse
-from helpers import handleNewURL, handle_short_url, originalURLExists
-from urllib.parse import unquote
+from helpers import handleNewURL, handle_short_url, getHits
 
 router = APIRouter()
 
 @router.post("/shorten-url")
 def shorten_url(new_url: str):
-    short_url = "localhost:8000/"
+    short_url = "https://shorter-link.fly.dev/"
     short_url += handleNewURL(new_url)
     return {"short_url": short_url}
 
@@ -19,13 +18,12 @@ def redirect_to_original(short_url: str):
         else:
             raise HTTPException(status_code=404, detail="URL not found")
     
-@router.get("/{original_url:path}")
-def get_hits(original_url: str):
-    new_original_url = unquote(original_url)
-    original_url = originalURLExists(new_original_url)
-    if original_url:
-        print("original url: ", original_url.original_url)
-        return {f"hits for {original_url.original_url}": original_url.hits}
+@router.get("/{short_url}/stats")
+def get_hits(short_url: str):
+    url_object = getHits(short_url)
+    if url_object:
+        print("original url: ", url_object.original_url, "short url:", url_object.short_url)
+        return {f"hits for {url_object.short_url}": url_object.hits}
     else:
-        print("Error, original_url not found")
+        print("Error, short url not found")
         raise HTTPException(status_code=404, detail="URL not found")

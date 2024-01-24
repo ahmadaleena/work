@@ -1,8 +1,9 @@
-from models import URLShortener
+from models import Base, URLShortener
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base
 import random
 import string
+import os
 
 #Random url generator
 def generateRandomString():
@@ -14,7 +15,16 @@ def generateRandomString():
     return key
 
 def create_session():
-    engine = create_engine("sqlite:///urls.db", echo=True)
+    # Check if 'urls.db' exists in the volume
+    db_file_path = '/data/urls.db'
+
+    if os.path.exists(db_file_path):
+        engine = create_engine(f'sqlite:///{db_file_path}', echo=True)
+    else:
+        # Create a new database and initialize tables
+        engine = create_engine(f'sqlite:///{db_file_path}', echo=True)
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+
     Session = sessionmaker(bind=engine)
     return Session()
 
@@ -37,6 +47,12 @@ def incrementHit(session, new_original_url):
         session.commit()
     else:
         print(f"Entry with short_url {new_original_url} not found")
+
+def getHits(new_short_url):
+    session = create_session()
+    result = session.query(URLShortener).filter_by(short_url= new_short_url).first()
+    session.close()
+    return result
 
 def addNewURL(session, new_short_url, new_original_url):
     newURL = URLShortener(short_url=new_short_url, original_url=new_original_url, hits=1)
